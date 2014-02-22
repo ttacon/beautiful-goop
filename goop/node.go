@@ -1,11 +1,10 @@
 package goop
 
 import (
-	"io"
-	"strings"
-
 	"code.google.com/p/go.net/html"
 	"code.google.com/p/go.net/html/atom"
+	"io"
+	"strings"
 )
 
 type GoopNode struct {
@@ -38,7 +37,7 @@ func tokenize(query string) [][]string {
 	firstClass := strings.Index(query, ".")
 	id := strings.Index(query, "#")
 	endElement := firstClass
-	if id < firstClass {
+	if id < firstClass && id != -1 {
 		endElement = id
 	}
 
