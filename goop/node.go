@@ -4,7 +4,6 @@ import (
 	"code.google.com/p/go.net/html"
 	"code.google.com/p/go.net/html/atom"
 	"io"
-	"regexp"
 	"strings"
 )
 
@@ -31,12 +30,6 @@ func BuildGoop(r io.Reader) (*Goop, error) {
 func (g *Goop) Find(query string) []*GoopNode {
 	return g.Root.Find(query)
 }
-
-var ele = regexp.MustCompile(`^([a-zA-Z\d]*)[\.|#]+.*$`)
-var classes = regexp.MustCompile(`(\.[a-zA-Z0-9_-]*)*`)
-var id = regexp.MustCompile(`(#[\w]*)`)
-var reg = regexp.MustCompile(`([a-zA-Z\d]*([\.|#][\da-zA-Z_-]*])*)*`)
-var nodeReg = regexp.MustCompile(`([\s]*)(#|\.[\w-]*)*`)
 
 func tokenize(query string) [][]string {
 	vals := make([][]string, 3)
@@ -88,18 +81,55 @@ func (g *GoopNode) Find(query string) []*GoopNode {
 	for _, q := range queries {
 		for _, p := range strings.Split(q, " ") {
 			vals := tokenize(p)
-			// var found []*GoopNode
+			var found []*GoopNode
 			for _, s := range searchFrom {
 				// if we have an id, search by it
+
 				if len(vals[1]) > 0 {
-					s.FindById(vals[1][0])
+					fs := s.FindById(vals[1][0])
+					if fs == nil {
+						continue
+					}
+
+					// now need to validate it has classes and type
+					if g.HasClasses(vals[2]) && g.IsElement(vals[0]) {
+						found = append(found, fs)
+					}
+					continue
 				}
-				// TODO(stopped here)
+
+				// get all elements of specific type if it exists
 			}
 		}
 	}
 
 	return nil
+}
+
+func (g *GoopNode) HasClasses(classes []string) bool {
+	classMap := make(map[string]bool)
+	for _, attr := range g.Attr {
+		if attr.Key == "class" {
+			classMap[attr.Val] = true
+		}
+	}
+
+	for _, class := range classes {
+		if _, ok := classMap[class]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *GoopNode) IsElement(eles []string) bool {
+	if len(eles) == 0 {
+		return true
+	}
+	// TODO(ttacon): deal w/ > 1 ele
+	ele := strings.Title(eles[0])
+	eleAtom := atom.Lookup([]byte(ele))
+	return g.DataAtom == eleAtom
 }
 
 func (g *Goop) FindAllElements(ele string) []*GoopNode {
