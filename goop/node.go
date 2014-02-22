@@ -1,10 +1,11 @@
 package goop
 
 import (
-	"code.google.com/p/go.net/html"
-	"code.google.com/p/go.net/html/atom"
 	"io"
 	"strings"
+
+	"code.google.com/p/go.net/html"
+	"code.google.com/p/go.net/html/atom"
 )
 
 type GoopNode struct {
