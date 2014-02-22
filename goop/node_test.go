@@ -11,7 +11,15 @@ func Test_FindAllElement(t *testing.T) {
 }
 
 func Test_NewGoopNode(t *testing.T) {
-
+	child := &html.Node{
+		Type:     0x3,
+		DataAtom: 0x27604,
+		Data:     "html",
+	}
+	gN := NewGoopNode(child)
+	if !nodeEqual(child, gN.Node) {
+		t.Errorf("nodes not equal, expected: %v, got %v", child, gN)
+	}
 }
 
 type goopNodeTest struct {
@@ -24,24 +32,29 @@ type goopTest struct {
 	goop  *Goop
 }
 
-func Test_BuildGoop(t *testing.T) {
-	parent := &html.Node{
+func htmlNodeBoilerPlate(n *html.Node) *html.Node {
+	doc := &html.Node{
 		Type: 0x2,
 	}
-	child := &html.Node{
+
+	htmlNode := &html.Node{
+		Parent:   doc,
 		Type:     0x3,
 		DataAtom: 0x27604,
 		Data:     "html",
 	}
+	doc.FirstChild = htmlNode
+	doc.LastChild = htmlNode
+
 	head := &html.Node{
-		Parent:   child,
+		Parent:   htmlNode,
 		Type:     0x3,
 		DataAtom: 0x2fa04,
 		Data:     "head",
 	}
 
 	body := &html.Node{
-		Parent:      child,
+		Parent:      htmlNode,
 		PrevSibling: head,
 		Type:        0x3,
 		DataAtom:    0x2f04,
@@ -49,14 +62,49 @@ func Test_BuildGoop(t *testing.T) {
 	}
 	head.NextSibling = body
 
+	htmlNode.FirstChild = head
+	htmlNode.LastChild = body
+
+	body.FirstChild = n
+	body.LastChild = n
+
+	n.Parent = body
+
+	return doc
+}
+
+func Test_BuildGoop(t *testing.T) {
+	/*	parent := &html.Node{
+			Type: 0x2,
+		}
+		child := &html.Node{
+			Type:     0x3,
+			DataAtom: 0x27604,
+			Data:     "html",
+		}
+		head := &html.Node{
+			Parent:   child,
+			Type:     0x3,
+			DataAtom: 0x2fa04,
+			Data:     "head",
+		}
+
+		body := &html.Node{
+			Parent:      child,
+			PrevSibling: head,
+			Type:        0x3,
+			DataAtom:    0x2f04,
+			Data:        "body",
+		}
+		head.NextSibling = body
+	*/
 	div := &html.Node{
-		Parent:   body,
 		Type:     0x3,
 		DataAtom: 0x10703,
 		Data:     "div",
 	}
-	body.FirstChild = div
-	body.LastChild = div
+	//body.FirstChild = div
+	//body.LastChild = div
 
 	foo := &html.Node{
 		Parent: div,
@@ -66,16 +114,14 @@ func Test_BuildGoop(t *testing.T) {
 	div.FirstChild = foo
 	div.LastChild = foo
 
-	parent.FirstChild = child
-	parent.LastChild = child
-	child.FirstChild = head
-	child.LastChild = body
-	child.Parent = parent
-
 	tests := []goopTest{
 		goopTest{
 			"<div>Foo</div>",
-			&Goop{Root: &GoopNode{parent}},
+			&Goop{
+				Root: &GoopNode{
+					Node: htmlNodeBoilerPlate(div),
+				},
+			},
 		},
 	}
 
