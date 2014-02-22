@@ -74,37 +74,11 @@ func htmlNodeBoilerPlate(n *html.Node) *html.Node {
 }
 
 func Test_BuildGoop(t *testing.T) {
-	/*	parent := &html.Node{
-			Type: 0x2,
-		}
-		child := &html.Node{
-			Type:     0x3,
-			DataAtom: 0x27604,
-			Data:     "html",
-		}
-		head := &html.Node{
-			Parent:   child,
-			Type:     0x3,
-			DataAtom: 0x2fa04,
-			Data:     "head",
-		}
-
-		body := &html.Node{
-			Parent:      child,
-			PrevSibling: head,
-			Type:        0x3,
-			DataAtom:    0x2f04,
-			Data:        "body",
-		}
-		head.NextSibling = body
-	*/
 	div := &html.Node{
 		Type:     0x3,
 		DataAtom: 0x10703,
 		Data:     "div",
 	}
-	//body.FirstChild = div
-	//body.LastChild = div
 
 	foo := &html.Node{
 		Parent: div,
