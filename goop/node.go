@@ -78,14 +78,17 @@ func tokenize(query string) [][]string {
 func (g *GoopNode) Find(query string) []*GoopNode {
 	// parse query for element, classes and id
 	queries := strings.Split(query, ",")
-	searchFrom := []*GoopNode{g}
+
+	var toReturn []*GoopNode
 	for _, q := range queries {
+		searchFrom := []*GoopNode{g}
+
 		for _, p := range strings.Split(q, " ") {
 			vals := tokenize(p)
 			var found []*GoopNode
+
 			for _, s := range searchFrom {
 				// if we have an id, search by it
-
 				if len(vals[1]) > 0 {
 					fs := s.FindById(vals[1][0])
 					if fs == nil {
@@ -100,11 +103,48 @@ func (g *GoopNode) Find(query string) []*GoopNode {
 				}
 
 				// get all elements of specific type if it exists
+				if len(vals[0]) > 0 {
+					// TODO(ttacon): deal w/ case when len(vals[0]) > 0
+					fs := s.FindAllElements(vals[0][0])
+
+					for _, f := range fs {
+						if f.HasClasses(vals[2]) {
+							found = append(found, f)
+						}
+					}
+					continue
+				}
+
+				// just get all elements by first class then verify
+				if len(vals[2]) == 0 {
+					continue
+				}
+
+				firstClass := vals[2][0]
+				fs := s.SearchByClass(firstClass)
+				if len(fs) == 0 {
+					continue
+				}
+
+				if len(vals[2]) > 1 {
+					found = append(found, fs...)
+					continue
+				}
+
+				for _, f := range fs {
+					if f.HasClasses(vals[2][1:]) {
+						found = append(found, f)
+					}
+				}
 			}
+			searchFrom = found
+		}
+		if len(searchFrom) > 0 {
+			toReturn = append(toReturn, searchFrom...)
 		}
 	}
 
-	return nil
+	return toReturn
 }
 
 func (g *GoopNode) HasClasses(classes []string) bool {
@@ -137,6 +177,12 @@ func (g *Goop) FindAllElements(ele string) []*GoopNode {
 	ele = strings.Title(ele)
 	eleAtom := atom.Lookup([]byte(ele))
 	return g.Root.SearchByElement(eleAtom)
+}
+
+func (g *GoopNode) FindAllElements(ele string) []*GoopNode {
+	ele = strings.Title(ele)
+	eleAtom := atom.Lookup([]byte(ele))
+	return g.SearchByElement(eleAtom)
 }
 
 func (g *GoopNode) SearchByElement(a atom.Atom) []*GoopNode {
