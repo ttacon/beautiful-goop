@@ -8,18 +8,22 @@ import (
 	"code.google.com/p/go.net/html/atom"
 )
 
+// A GoopNode is a wrapper for html.Node to add extended functionality.
 type GoopNode struct {
 	*html.Node
 }
 
+// Goop is represents a parsed webpage.
 type Goop struct {
-	Root *GoopNode
+	Root *GoopNode // The root node of the document
 }
 
+// NewGoopNode creates a new GoopNode from its core html.Node
 func NewGoopNode(n *html.Node) *GoopNode {
 	return &GoopNode{n}
 }
 
+// BuildGoop constructs a Goop struct from a webpage
 func BuildGoop(r io.Reader) (*Goop, error) {
 	doc, err := html.Parse(r)
 	if err != nil {
@@ -28,10 +32,16 @@ func BuildGoop(r io.Reader) (*Goop, error) {
 	return &Goop{NewGoopNode(doc)}, nil
 }
 
+// Find takes one or more comma separated selectors (as in jQuery) and returns
+// a slice of GoopNodes satisfying the query.
 func (g *Goop) Find(query string) []*GoopNode {
 	return g.Root.Find(query)
 }
 
+// tokenizes a query and returns a [][]string of the form:
+// vals[0] = html element (len(vals[0]) <= 1)
+// vals[1] = element id (len(vals[1]) <= 1)
+// vals[2] = element classes (len(vals[2]) >= 0)
 func tokenize(query string) [][]string {
 	vals := make([][]string, 3)
 
@@ -75,6 +85,8 @@ func tokenize(query string) [][]string {
 	return vals
 }
 
+// Find takes one or more comma separated selectors (as in jQuery) and returns
+// a slice of GoopNodes satisfying the query.
 func (g *GoopNode) Find(query string) []*GoopNode {
 	// parse query for element, classes and id
 	queries := strings.Split(query, ",")
@@ -147,6 +159,7 @@ func (g *GoopNode) Find(query string) []*GoopNode {
 	return toReturn
 }
 
+// Determine whether or not the receiving node has the given classes.
 func (g *GoopNode) HasClasses(classes []string) bool {
 	classMap := make(map[string]bool)
 	for _, attr := range g.Attr {
@@ -163,6 +176,7 @@ func (g *GoopNode) HasClasses(classes []string) bool {
 	return true
 }
 
+// Determine whether or not the receiving node is of the given element type.
 func (g *GoopNode) IsElement(eles []string) bool {
 	if len(eles) == 0 {
 		return true
