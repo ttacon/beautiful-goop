@@ -187,18 +187,23 @@ func (g *GoopNode) IsElement(eles []string) bool {
 	return g.DataAtom == eleAtom
 }
 
+// Returns all elements of the given type in the webpage.
 func (g *Goop) FindAllElements(ele string) []*GoopNode {
 	ele = strings.Title(ele)
 	eleAtom := atom.Lookup([]byte(ele))
 	return g.Root.SearchByElement(eleAtom)
 }
 
+// Finds all elements of the given type which are children of the receiving node
+// (the recieving node may also be returned if it is of the given type).
 func (g *GoopNode) FindAllElements(ele string) []*GoopNode {
 	ele = strings.Title(ele)
 	eleAtom := atom.Lookup([]byte(ele))
 	return g.SearchByElement(eleAtom)
 }
 
+// SearchByElement has the same functionality of FindAllElements but takes in
+// a html.Atom instead of the element type as a string
 func (g *GoopNode) SearchByElement(a atom.Atom) []*GoopNode {
 	var found []*GoopNode
 	if g.DataAtom == a {
@@ -213,10 +218,14 @@ func (g *GoopNode) SearchByElement(a atom.Atom) []*GoopNode {
 	return found
 }
 
+// Finds all elements with the given class in the current document.
 func (g *Goop) FindAllWithClass(class string) []*GoopNode {
 	return g.Root.SearchByClass(class)
 }
 
+// Finds all elements with the given class which are descended from the
+// current node (the receiving node may also be returned if it has the
+// given class).
 func (g *GoopNode) SearchByClass(class string) []*GoopNode {
 	var found []*GoopNode
 	for _, attr := range g.Attr {
@@ -234,10 +243,16 @@ func (g *GoopNode) SearchByClass(class string) []*GoopNode {
 	return found
 }
 
+// Finds the element with the given id in the current doc. FindById
+// expects there to only be one element with the id - if the page you are
+// searching in has more than one element with the same id, FindById will
+// return the first one it encounters.
 func (g *Goop) FindById(id string) *GoopNode {
 	return g.Root.FindById(id)
 }
 
+// Finds an element by id from the current node (with the same constraints
+// as when calling FindById from a Goop struct).
 func (g *GoopNode) FindById(id string) *GoopNode {
 	for _, attr := range g.Attr {
 		if attr.Key == "id" && attr.Val == id {
@@ -254,6 +269,8 @@ func (g *GoopNode) FindById(id string) *GoopNode {
 	return nil
 }
 
+// Returns the attributes of a node in a friendlier format than stored in
+// an html.Node.
 func (g *GoopNode) Attributes() map[string][]string {
 	attrs := make(map[string][]string)
 	for _, attr := range g.Attr {
