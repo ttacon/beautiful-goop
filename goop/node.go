@@ -1,11 +1,10 @@
 package goop
 
 import (
-	"io"
-	"strings"
-
 	"code.google.com/p/go.net/html"
 	"code.google.com/p/go.net/html/atom"
+	"io"
+	"strings"
 )
 
 // A GoopNode is a wrapper for html.Node to add extended functionality.
@@ -189,7 +188,6 @@ func (g *GoopNode) IsElement(eles []string) bool {
 
 // Returns all elements of the given type in the webpage.
 func (g *Goop) FindAllElements(ele string) []*GoopNode {
-	ele = strings.Title(ele)
 	eleAtom := atom.Lookup([]byte(ele))
 	return g.Root.SearchByElement(eleAtom)
 }
@@ -197,7 +195,6 @@ func (g *Goop) FindAllElements(ele string) []*GoopNode {
 // Finds all elements of the given type which are children of the receiving node
 // (the recieving node may also be returned if it is of the given type).
 func (g *GoopNode) FindAllElements(ele string) []*GoopNode {
-	ele = strings.Title(ele)
 	eleAtom := atom.Lookup([]byte(ele))
 	return g.SearchByElement(eleAtom)
 }
